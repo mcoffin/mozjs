@@ -170,9 +170,12 @@ fn build_jsapi(build_dir: &Path) {
     cppflags.push(env::var_os("CPPFLAGS").unwrap_or_default());
     cmd.env("CPPFLAGS", cppflags);
 
-    if let Some(makeflags) = env::var_os("CARGO_MAKEFLAGS") {
+    use std::borrow::Cow;
+    let c_makeflags = env::var("CARGO_MAKEFLAGS");
+    if let Some(makeflags) = c_makeflags.as_ref().ok() {
         cmd.env("MAKEFLAGS", makeflags);
     }
+    let c_makeflags = c_makeflags.map_or(Cow::Borrowed(""), Cow::Owned);
 
     if target.contains("apple") || target.contains("freebsd") {
         cmd.env("CXXFLAGS", "-stdlib=libc++");
@@ -183,6 +186,7 @@ fn build_jsapi(build_dir: &Path) {
     let result = cmd
         .args(&["-R", "-f"])
         .arg(cargo_manifest_dir.join("makefile.cargo"))
+        .args(c_makeflags.split(" "))
         .current_dir(&build_dir)
         .env("SRC_DIR", &cargo_manifest_dir.join("mozjs"))
         .env("NO_RUST_PANIC_HOOK", "1")

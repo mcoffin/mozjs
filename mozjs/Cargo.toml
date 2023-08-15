@@ -16,6 +16,8 @@ exclude = [
 ]
 
 [features]
+default = ["parallel-build"]
+parallel-build = ["cc/parallel"]
 debugmozjs = []
 profilemozjs = []
 uwp = []
